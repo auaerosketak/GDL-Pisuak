@@ -557,7 +557,7 @@ def main():
         u = [x for x in r.get("urls", []) if any(p in x for p in P_HTTP)]
         if not u: continue
         est = verificar_http(u[0])
-        r["available"] = (est == "activo")
+        r["available"] = True if est == "activo" else (False if est == "caido" else None)
         r["available_detail"] = est
         r["last_checked"] = datetime.date.today().isoformat()
         ico = {"activo": "OK", "caido": "XX", "no_verificable": "??"}[est]
@@ -579,7 +579,7 @@ def main():
                          if any(q in x for q in P_STEALTH)]
                     if not u: continue
                     est = verificar_stealth(page, u[0])
-                    r["available"] = (est == "activo")
+                    r["available"] = True if est == "activo" else (False if est == "caido" else None)
                     r["available_detail"] = est
                     r["last_checked"] = datetime.date.today().isoformat()
                     ico = {"activo": "OK", "caido": "XX", "no_verificable": "??"}[est]
