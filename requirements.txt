@@ -1,0 +1,6 @@
+playwright
+patchright
+requests
+beautifulsoup4
+lxml
+reportlab
