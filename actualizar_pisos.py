@@ -42,7 +42,7 @@ CAND_FILE = CARPETA / "nuevos_candidatos.json"
 # ══════════════════════════════════════════════════════════════════════════
 # CRITERIOS DE BÚSQUEDA
 # ══════════════════════════════════════════════════════════════════════════
-PRECIO_MAX_AMUEBLADO = 21000
+PRECIO_MAX_BUSQUEDA = 22000  # techo de precio NOMINAL para la busqueda; no distingue amueblado o no
 PRECIO_MAX_SIN_AMUE  = 19500   # filtro duro si no tiene piscina ni 2 rec
 
 COLONIAS_OBJETIVO = [
@@ -259,35 +259,79 @@ def verificar_stealth(page, url):
 # BÚSQUEDA DE NUEVOS
 # ══════════════════════════════════════════════════════════════════════════
 def buscar_propiedades_com(urls_existentes):
+    """
+    Selectores verificados el 13-08-2026 sobre HTML real de propiedades.com.
+    Cada tarjeta: section[id^='result-card-'], link en
+    a.pcom-property-card-body-main-info-street (URL completa ya lista),
+    amenidades como lista li.amenities con .amenities-label/.amenities-count
+    (incluye la etiqueta directa "Amueblado" cuando aplica). El precio no
+    tiene clase estable (usa hashes de styled-components), asi que se busca
+    por patron $X,XXX en el texto completo de la tarjeta.
+    """
     import requests
     from bs4 import BeautifulSoup
     nuevos = []
     url = (f"https://propiedades.com/guadalajara/departamentos-renta"
-           f"?precio-maximo={PRECIO_MAX_AMUEBLADO}&orden=reciente")
+           f"?precio-maximo={PRECIO_MAX_BUSQUEDA}&orden=reciente")
     try:
-        r = requests.get(url, timeout=15, headers={"User-Agent": UA})
+        r = requests.get(url, timeout=20, headers={"User-Agent": UA})
         if r.status_code != 200:
             log(f"    propiedades.com: HTTP {r.status_code}")
             return nuevos
         soup = BeautifulSoup(r.text, "lxml")
-        for card in soup.select("article, div[class*='property'], div[class*='listing']")[:40]:
+        cards = soup.select("section[id^='result-card-']")
+        for card in cards[:40]:
             try:
-                a = card.select_one("a[href*='/inmuebles/']")
-                if not a: continue
-                href = a.get("href", "")
-                u = "https://propiedades.com" + href if href.startswith("/") else href
-                if u in urls_existentes: continue
-                pe = card.select_one("[class*='price'],[class*='precio']")
-                ptxt = pe.get_text(strip=True) if pe else ""
-                precio = int(re.sub(r"[^\d]", "", ptxt)) if re.search(r"\d{4,}", ptxt) else 0
-                if not (5000 < precio <= PRECIO_MAX_AMUEBLADO): continue
-                ne = card.select_one("h2,h3,[class*='title']")
-                nombre = ne.get_text(strip=True)[:60] if ne else "Departamento"
-                ce = card.select_one("[class*='location'],[class*='colonia']")
-                colonia = ce.get_text(strip=True) if ce else ""
-                if not en_colonia_objetivo(colonia + " " + nombre): continue
-                nuevos.append({"nombre": nombre, "colonia": colonia, "precio": precio,
-                               "url": u, "portal": "propiedades.com"})
+                a = card.select_one("a.pcom-property-card-body-main-info-street")
+                if not a:
+                    continue
+                u = a.get("href", "")
+                if not u or u in urls_existentes:
+                    continue
+
+                full_text = card.get_text(" ", strip=True)
+                pm = re.search(r"\$\s?([\d,]{4,})", full_text)
+                precio = int(re.sub(r"[^\d]", "", pm.group(1))) if pm else 0
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
+                    continue
+
+                amenities = {}
+                for li in card.select("li.amenities"):
+                    label_el = li.select_one(".amenities-label")
+                    count_el = li.select_one(".amenities-count")
+                    if label_el:
+                        label = label_el.get_text(strip=True).lower()
+                        count = int(count_el.get_text(strip=True)) if count_el else True
+                        amenities[label] = count
+
+                rec = 1
+                for k, v in amenities.items():
+                    if "recámara" in k or "recamara" in k:
+                        rec = v if isinstance(v, int) else 1
+
+                mob = "A" if any("amueblado" in k for k in amenities) else "?"
+                pool = any("alberca" in k or "piscina" in k for k in amenities)
+
+                m2m = re.search(r"(\d+)\s*m[²2]", full_text)
+                m2 = int(m2m.group(1)) if m2m else 0
+
+                tl = full_text.lower()
+                colonia = ""
+                for c in COLONIAS_OBJETIVO:
+                    if c in tl:
+                        colonia = c
+                        break
+                if not colonia:
+                    continue
+
+                h2 = card.select_one("h2")
+                nombre = h2.get_text(strip=True)[:70] if h2 else "Departamento"
+
+                nuevos.append({
+                    "nombre": nombre, "colonia": colonia, "precio": precio,
+                    "m2": m2, "rec": rec, "mob": mob, "pool": pool,
+                    "url": u, "portal": "propiedades.com", "nuevo": True
+                })
             except Exception:
                 continue
         log(f"    propiedades.com: {len(nuevos)} candidatos")
@@ -296,15 +340,19 @@ def buscar_propiedades_com(urls_existentes):
     return nuevos
 
 def buscar_easybroker(urls_existentes):
-    import requests
+    import requests, os
     nuevos = []
+    api_key = os.environ.get("EASYBROKER_API_KEY", "")
+    if not api_key:
+        log("    EasyBroker: sin clave configurada (ver EASYBROKER_API_KEY en Settings > Secrets)")
+        return nuevos
     try:
         r = requests.get("https://api.easybroker.com/v1/properties",
             params={"property_types[]": "apartment", "operation_type": "rental",
                     "location": "Guadalajara, Jalisco",
-                    "max_price": PRECIO_MAX_AMUEBLADO, "currency": "MXN",
+                    "max_price": PRECIO_MAX_BUSQUEDA, "currency": "MXN",
                     "page": 1, "per_page": 50},
-            headers={"X-Authorization": "key_Rw7oZKFUb8gxdD2jcfvn",
+            headers={"X-Authorization": api_key,
                      "Accept": "application/json"}, timeout=12)
         if r.status_code != 200:
             log(f"    EasyBroker: HTTP {r.status_code}")
@@ -315,7 +363,7 @@ def buscar_easybroker(urls_existentes):
                 if not u or u in urls_existentes: continue
                 ops = prop.get("operations", [])
                 precio = ops[0].get("amount", 0) if ops else 0
-                if not (5000 < precio <= PRECIO_MAX_AMUEBLADO): continue
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA): continue
                 colonia = prop.get("location", {}).get("name", "")
                 if not en_colonia_objetivo(colonia): continue
                 nuevos.append({
@@ -331,21 +379,247 @@ def buscar_easybroker(urls_existentes):
         log(f"    EasyBroker: error – {e}")
     return nuevos
 
-def buscar_stealth_portal(page, nombre, url_busqueda, urls_existentes):
+def buscar_vivanuncios(page, url_busqueda, urls_existentes):
+    """
+    Selectores verificados el 13-08-2026 sobre HTML real de Vivanuncios.
+    Comparte la misma plantilla que Inmuebles24 (ambos son del grupo Navent),
+    pero con etiquetas HTML ligeramente distintas (div/span en vez de h2/h4),
+    asi que aqui se usan selectores por atributo data-qa sin fijar la etiqueta.
+    IMPORTANTE: Vivanuncios mezcla anuncios de habitaciones compartidas /
+    casas de asistencia junto con departamentos completos - se excluyen
+    por palabras clave en la descripcion.
+    """
+    from bs4 import BeautifulSoup
+    nuevos = []
+    EXCLUIR_COMPARTIDO = ["asistencia", "compartid", "por persona",
+                          "habitación en renta", "habitacion en renta",
+                          "roomie", "cuarto en renta", "renta de cuarto"]
+    try:
+        page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
+        time.sleep(3)
+        soup = BeautifulSoup(page.content(), "lxml")
+        cards = soup.select("div[data-qa='posting PROPERTY']")
+        for card in cards[:40]:
+            try:
+                rel_url = card.get("data-to-posting", "")
+                if not rel_url:
+                    continue
+                u = ("https://www.vivanuncios.com.mx" + rel_url
+                     if rel_url.startswith("/") else rel_url)
+                if u in urls_existentes:
+                    continue
+
+                price_el = card.select_one("[data-qa='POSTING_CARD_PRICE']")
+                ptxt = price_el.get_text(strip=True) if price_el else ""
+                raw = re.sub(r"[^\d]", "", ptxt)
+                precio = int(raw) if len(raw) >= 4 else 0
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
+                    continue
+
+                feat_el = card.select_one("[data-qa='POSTING_CARD_FEATURES']")
+                m2, rec = 0, 1
+                if feat_el:
+                    for s in feat_el.select("span"):
+                        t = s.get_text(strip=True)
+                        m2_m = re.search(r"(\d+)\s*m", t)
+                        if m2_m: m2 = int(m2_m.group(1))
+                        rec_m = re.search(r"(\d+)\s*rec", t)
+                        if rec_m: rec = int(rec_m.group(1))
+
+                loc_el = card.select_one("[data-qa='POSTING_CARD_LOCATION']")
+                colonia = loc_el.get_text(strip=True) if loc_el else ""
+                if not en_colonia_objetivo(colonia):
+                    continue
+
+                desc_el = card.select_one("[data-qa='POSTING_CARD_DESCRIPTION']")
+                desc = desc_el.get_text(strip=True) if desc_el else ""
+                dl = desc.lower()
+
+                if any(k in dl for k in EXCLUIR_COMPARTIDO):
+                    continue  # habitacion compartida / casa de asistencia, no es un depto propio
+
+                mob = "?"
+                if "sin amueblar" in dl or "sin muebles" in dl:
+                    mob = "N"
+                elif "semiamueblad" in dl or "semi amueblad" in dl or "semi-amueblad" in dl:
+                    mob = "S"
+                elif "amueblad" in dl:
+                    mob = "A"
+                pool = ("alberca" in dl or "piscina" in dl)
+
+                nuevos.append({
+                    "nombre": (desc[:70] if desc else "Departamento"),
+                    "colonia": colonia, "precio": precio, "m2": m2, "rec": rec,
+                    "mob": mob, "pool": pool,
+                    "url": u, "portal": "Vivanuncios", "nuevo": True
+                })
+            except Exception:
+                continue
+        log(f"    Vivanuncios: {len(nuevos)} candidatos")
+    except Exception as e:
+        log(f"    Vivanuncios: error – {e}")
+    return nuevos
+
+def buscar_inmuebles24(page, url_busqueda, urls_existentes):
+    """
+    Selectores verificados el 13-08-2026 sobre HTML real de Inmuebles24.
+    Cada tarjeta trae: data-to-posting (URL directa), data-qa='POSTING_CARD_PRICE',
+    data-qa='POSTING_CARD_FEATURES' (m2/rec/banos/estac), data-qa='POSTING_CARD_LOCATION'
+    (colonia), data-qa='POSTING_CARD_DESCRIPTION' (texto libre con amueblado/alberca/etc).
+    """
     from bs4 import BeautifulSoup
     nuevos = []
     try:
         page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
         time.sleep(3)
         soup = BeautifulSoup(page.content(), "lxml")
-        if "inmuebles24" in url_busqueda:
-            sel_card = ("div[class*='posting-card'], article[class*='posting'], "
-                        "div[class*='CardContainer']")
-            sel_link, dominio = "a[href*='/propiedades/']", "https://www.inmuebles24.com"
-        else:
-            sel_card = ("div[class*='ListingCell'], article[class*='listing'], "
-                        "div[class*='card']")
-            sel_link, dominio = "a[href*='/detalle/'], a[href*='/jalisco/']", "https://www.lamudi.com.mx"
+        cards = soup.select("div[data-qa='posting PROPERTY']")
+        for card in cards[:40]:
+            try:
+                rel_url = card.get("data-to-posting", "")
+                if not rel_url:
+                    continue
+                u = ("https://www.inmuebles24.com" + rel_url
+                     if rel_url.startswith("/") else rel_url)
+                if u in urls_existentes:
+                    continue
+
+                price_el = card.select_one("h2[data-qa='POSTING_CARD_PRICE']")
+                ptxt = price_el.get_text(strip=True) if price_el else ""
+                precio = int(re.sub(r"[^\d]", "", ptxt) or "0") if len(re.sub(r"[^\d]", "", ptxt)) >= 4 else 0
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
+                    continue
+
+                feat_el = card.select_one("h3[data-qa='POSTING_CARD_FEATURES']")
+                m2, rec = 0, 1
+                if feat_el:
+                    for s in feat_el.select("span"):
+                        t = s.get_text(strip=True)
+                        m2_m = re.search(r"(\d+)\s*m", t)
+                        if m2_m: m2 = int(m2_m.group(1))
+                        rec_m = re.search(r"(\d+)\s*rec", t)
+                        if rec_m: rec = int(rec_m.group(1))
+
+                loc_el = card.select_one("h4[data-qa='POSTING_CARD_LOCATION']")
+                colonia = loc_el.get_text(strip=True) if loc_el else ""
+                if not en_colonia_objetivo(colonia):
+                    continue
+
+                desc_el = card.select_one("h2[data-qa='POSTING_CARD_DESCRIPTION']")
+                desc = desc_el.get_text(strip=True) if desc_el else ""
+                dl = desc.lower()
+                mob = "?"
+                if "sin amueblar" in dl or "sin muebles" in dl:
+                    mob = "N"
+                elif "semiamueblad" in dl or "semi amueblad" in dl or "semi-amueblad" in dl:
+                    mob = "S"
+                elif "amueblad" in dl:
+                    mob = "A"
+                pool = ("alberca" in dl or "piscina" in dl)
+
+                nuevos.append({
+                    "nombre": (desc[:70] if desc else "Departamento") ,
+                    "colonia": colonia, "precio": precio, "m2": m2, "rec": rec,
+                    "mob": mob, "pool": pool,
+                    "url": u, "portal": "Inmuebles24", "nuevo": True
+                })
+            except Exception:
+                continue
+        log(f"    Inmuebles24: {len(nuevos)} candidatos")
+    except Exception as e:
+        log(f"    Inmuebles24: error – {e}")
+    return nuevos
+
+def buscar_lamudi(page, url_busqueda, urls_existentes):
+    """
+    Selectores verificados el 13-08-2026 sobre HTML real de Lamudi.
+    Cada tarjeta: div[data-test='normal-listing'], link /detalle/...,
+    precio en div.snippet__content__price, recamaras en
+    span[data-test='bedrooms-value'], area en span[data-test='area-value'],
+    colonia en span[data-test='snippet-content-location'], descripcion
+    completa en div[data-itemdescription='true'] (atributo content).
+    """
+    from bs4 import BeautifulSoup
+    nuevos = []
+    try:
+        page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
+        time.sleep(3)
+        soup = BeautifulSoup(page.content(), "lxml")
+        cards = soup.select("div[data-test='normal-listing']")
+        for card in cards[:40]:
+            try:
+                a = card.select_one("a[href^='/detalle/']")
+                if not a:
+                    continue
+                href = a.get("href", "")
+                u = "https://www.lamudi.com.mx" + href if href.startswith("/") else href
+                if u in urls_existentes:
+                    continue
+
+                price_el = card.select_one("div.snippet__content__price")
+                ptxt = price_el.get_text(strip=True) if price_el else ""
+                raw = re.sub(r"[^\d]", "", ptxt)
+                precio = int(raw) if len(raw) >= 4 else 0
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
+                    continue
+
+                rec_el = card.select_one("span[data-test='bedrooms-value']")
+                rec = 1
+                if rec_el:
+                    rm = re.search(r"\d+", rec_el.get_text(strip=True))
+                    if rm: rec = int(rm.group())
+
+                area_el = card.select_one("span[data-test='area-value']")
+                m2 = 0
+                if area_el:
+                    am = re.search(r"(\d+)", area_el.get_text(strip=True))
+                    if am: m2 = int(am.group(1))
+
+                loc_el = card.select_one("span[data-test='snippet-content-location']")
+                colonia = loc_el.get_text(strip=True) if loc_el else ""
+                if not en_colonia_objetivo(colonia):
+                    continue
+
+                desc_el = card.select_one("div[data-itemdescription='true']")
+                desc = ""
+                if desc_el:
+                    desc = desc_el.get("content", "") or desc_el.get_text(strip=True)
+                dl = desc.lower()
+                mob = "?"
+                if "sin amueblar" in dl or "sin muebles" in dl:
+                    mob = "N"
+                elif "semiamueblad" in dl or "semi amueblad" in dl or "semi-amueblad" in dl:
+                    mob = "S"
+                elif "amueblad" in dl:
+                    mob = "A"
+                pool = ("alberca" in dl or "piscina" in dl)
+
+                title_el = card.select_one("span[itemprop='name']")
+                titulo = title_el.get_text(strip=True) if title_el else (desc[:70] or "Departamento")
+
+                nuevos.append({
+                    "nombre": titulo, "colonia": colonia, "precio": precio,
+                    "m2": m2, "rec": rec, "mob": mob, "pool": pool,
+                    "url": u, "portal": "Lamudi", "nuevo": True
+                })
+            except Exception:
+                continue
+        log(f"    Lamudi: {len(nuevos)} candidatos")
+    except Exception as e:
+        log(f"    Lamudi: error – {e}")
+    return nuevos
+
+def buscar_stealth_portal(page, nombre, url_busqueda, urls_existentes):
+    """Version generica de respaldo (selectores no verificados)."""
+    from bs4 import BeautifulSoup
+    nuevos = []
+    try:
+        page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
+        time.sleep(3)
+        soup = BeautifulSoup(page.content(), "lxml")
+        sel_card = ("div[class*='ListingCell'], article[class*='listing'], "
+                    "div[class*='card']")
+        sel_link, dominio = "a[href*='/detalle/'], a[href*='/jalisco/']", "https://www.lamudi.com.mx"
         for card in soup.select(sel_card)[:25]:
             try:
                 a = card.select_one(sel_link)
@@ -355,12 +629,12 @@ def buscar_stealth_portal(page, nombre, url_busqueda, urls_existentes):
                 if u in urls_existentes: continue
                 pe = card.select_one("[class*='price'],[class*='Price']")
                 ptxt = pe.get_text(strip=True) if pe else ""
-                precio = int(re.sub(r"[^\d]", "", ptxt)) if re.search(r"\d{4,}", ptxt) else 0
-                if not (5000 < precio <= PRECIO_MAX_AMUEBLADO): continue
+                precio = int(re.sub(r"[^\d]", "", ptxt) or "0") if len(re.sub(r"[^\d]", "", ptxt)) >= 4 else 0
+                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA): continue
                 ne = card.select_one("h2,h3,[class*='title']")
                 titulo = ne.get_text(strip=True)[:60] if ne else "Departamento"
                 nuevos.append({"nombre": titulo, "precio": precio,
-                               "url": u, "portal": nombre})
+                               "url": u, "portal": nombre, "nuevo": True})
             except Exception:
                 continue
         log(f"    {nombre}: {len(nuevos)} candidatos")
@@ -641,7 +915,7 @@ def main():
         log("\n-- FASE 3: buscando nuevos anuncios --")
         log(f"  Colonias: Providencia, Ladron de Guevara, Americana, "
             f"Santa Teresita, Vallarta Norte")
-        log(f"  Precio maximo: ${PRECIO_MAX_AMUEBLADO:,} amueblado")
+        log(f"  Precio nominal maximo (cualquier mobiliario): ${PRECIO_MAX_BUSQUEDA:,}")
         nuevos += buscar_propiedades_com(urls_existentes)
         nuevos += buscar_easybroker(urls_existentes)
         try:
@@ -649,14 +923,18 @@ def main():
             with pr() as p:
                 browser, ctx = crear_browser(p)
                 page = ctx.new_page()
-                nuevos += buscar_stealth_portal(page, "Inmuebles24",
+                nuevos += buscar_inmuebles24(page,
                     "https://www.inmuebles24.com/departamentos-en-renta-en-"
                     "ladron-de-guevara,americana,providencia,santa-teresita-"
-                    f"jalisco.html?precio-maximo={PRECIO_MAX_AMUEBLADO}",
+                    f"jalisco.html?precio-maximo={PRECIO_MAX_BUSQUEDA}",
                     urls_existentes)
-                nuevos += buscar_stealth_portal(page, "Lamudi",
+                nuevos += buscar_lamudi(page,
                     "https://www.lamudi.com.mx/jalisco/guadalajara/for-rent/"
-                    f"?price[max]={PRECIO_MAX_AMUEBLADO}&property_type[]=Apartamento",
+                    f"?price[max]={PRECIO_MAX_BUSQUEDA}&property_type[]=Apartamento",
+                    urls_existentes)
+                nuevos += buscar_vivanuncios(page,
+                    "https://www.vivanuncios.com.mx/departamentos-en-renta/"
+                    f"guadalajara/v1c1097l4009p1?precio-maximo={PRECIO_MAX_BUSQUEDA}",
                     urls_existentes)
                 browser.close()
         except Exception as e:
