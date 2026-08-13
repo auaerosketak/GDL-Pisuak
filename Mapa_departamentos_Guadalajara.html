@@ -651,7 +651,18 @@ function copyResult(){
 }
 function extractFromText(txt){
   var t=txt.toLowerCase(); var r={ok:false,extras:[]};
-  var pm=txt.match(/\$\s?([\d,]{4,})/)||txt.match(/([\d,]{5,})\s*MXN/i)||txt.match(/renta[:\s]+([\d,]+)/i);
+  var patterns=[
+    /MN\s*\$?\s*(\d{1,3}(?:,\d{3})+)/i,          // "MN 15,000" (Inmuebles24)
+    /\$\s?(\d{1,3}(?:,\d{3})+)\s*MXN/i,          // "$ 21,000 MXN" (Lamudi)
+    /\$\s?(\d{1,3}(?:,\d{3})+)/,                 // "$7,000" (propiedades.com y generico)
+    /(\d{1,3}(?:,\d{3})+)\s*MXN/i,               // "15,000 MXN" sin simbolo $
+    /renta[:\s]+\$?\s?(\d[\d,]{3,})/i            // "Renta: 15000" generico
+  ];
+  var pm=null;
+  for(var i=0;i<patterns.length;i++){
+    pm=txt.match(patterns[i]);
+    if(pm) break;
+  }
   if(pm) r.precio=parseInt(pm[1].replace(/,/g,'')); else return r;
   var mm=txt.match(/(\d+)\s*m[²2]/i)||txt.match(/(\d+)\s*metros/i)||txt.match(/superficie[:\s]+(\d+)/i);
   r.m2=mm?parseInt(mm[1]):50;
