@@ -29,7 +29,7 @@ REQUISITOS
     patchright install chromium
 """
 
-import json, time, re, sys, datetime, math
+import json, time, re, sys, os, datetime, math
 from pathlib import Path
 
 CARPETA   = Path(__file__).parent
@@ -230,14 +230,62 @@ def verificar_http(url):
     except Exception:
         return "no_verificable"
 
+def detectar_bloqueo(html_text, nbytes):
+    """Distingue 'la pagina no trajo resultados' de 'nos han bloqueado'.
+    Una pagina de resultados real pesa cientos de miles de bytes; menos de
+    ~80KB junto con palabras clave de verificacion indica bloqueo."""
+    t = (html_text or "").lower()
+    señales = ["captcha", "verificando", "verifying", "access denied",
+               "acceso denegado", "robot", "unusual traffic", "cloudflare",
+               "just a moment", "checking your browser", "are you human"]
+    if any(s in t for s in señales):
+        return "bloqueo (pagina de verificacion / captcha)"
+    if nbytes < 5000:
+        return "bloqueo (respuesta practicamente vacia)"
+    if nbytes < 80000:
+        return "posible bloqueo (pagina demasiado pequena para ser resultados reales)"
+    return None
+
 def crear_browser(p):
-    browser = p.chromium.launch(headless=True,
-                                args=["--no-sandbox", "--disable-dev-shm-usage"])
-    ctx = browser.new_context(
-        viewport={"width": 1366, "height": 768},
-        locale="es-MX", user_agent=UA,
-        extra_http_headers={"Accept-Language": "es-MX,es;q=0.9,en;q=0.7"})
-    return browser, ctx
+    """
+    Configuracion recomendada por la documentacion de Patchright para evitar
+    ser detectado. Puntos clave (aprendidos a base de fallos):
+      - launch_persistent_context, NO launch() + new_context()
+      - channel='chrome' (Chrome real instalado), no el Chromium empaquetado
+      - headless=False en el ordenador local: el modo invisible es detectable
+      - SIN user_agent personalizado, SIN viewport personalizado: esas
+        personalizaciones son justo lo que delata al navegador automatizado
+    En GitHub Actions no hay pantalla, asi que ahi se fuerza headless.
+    """
+    en_github = bool(os.environ.get("GITHUB_ACTIONS"))
+    perfil = str(CARPETA / "perfil_navegador")
+
+    intentos = []
+    if not en_github:
+        # Local: lo mas parecido a una persona usando su Chrome normal
+        intentos.append(dict(channel="chrome", headless=False))
+        intentos.append(dict(channel="msedge", headless=False))
+        intentos.append(dict(headless=False))
+    intentos.append(dict(headless=True,
+                         args=["--no-sandbox", "--disable-dev-shm-usage"]))
+
+    ultimo_error = None
+    for opciones in intentos:
+        try:
+            ctx = p.chromium.launch_persistent_context(
+                perfil,
+                no_viewport=True,
+                locale="es-MX",
+                **opciones
+            )
+            modo = opciones.get("channel", "chromium")
+            visible = "visible" if not opciones.get("headless") else "invisible"
+            log(f"      navegador: {modo} ({visible})")
+            return ctx, ctx   # se devuelve dos veces por compatibilidad
+        except Exception as e:
+            ultimo_error = e
+            continue
+    raise RuntimeError(f"No se pudo abrir ningun navegador: {ultimo_error}")
 
 def verificar_stealth(page, url):
     try:
@@ -495,7 +543,10 @@ def buscar_vivanuncios(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Vivanuncios: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
+        _html = page.content()
+        _diag = detectar_bloqueo(_html, len(_html))
+        log(f"    Vivanuncios: {len(nuevos)} candidatos ({len(cards)} tarjetas, {len(_html)} bytes)"
+            + (f" -> {_diag}" if _diag else ""))
     except Exception as e:
         log(f"    Vivanuncios: error – {e}")
     return nuevos
@@ -569,7 +620,10 @@ def buscar_inmuebles24(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Inmuebles24: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
+        _html = page.content()
+        _diag = detectar_bloqueo(_html, len(_html))
+        log(f"    Inmuebles24: {len(nuevos)} candidatos ({len(cards)} tarjetas, {len(_html)} bytes)"
+            + (f" -> {_diag}" if _diag else ""))
     except Exception as e:
         log(f"    Inmuebles24: error – {e}")
     return nuevos
@@ -652,7 +706,10 @@ def buscar_lamudi(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Lamudi: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
+        _html = page.content()
+        _diag = detectar_bloqueo(_html, len(_html))
+        log(f"    Lamudi: {len(nuevos)} candidatos ({len(cards)} tarjetas, {len(_html)} bytes)"
+            + (f" -> {_diag}" if _diag else ""))
     except Exception as e:
         log(f"    Lamudi: error – {e}")
     return nuevos
@@ -906,7 +963,7 @@ def main():
             from patchright.sync_api import sync_playwright as pr
             with pr() as p:
                 browser, ctx = crear_browser(p)
-                page = ctx.new_page()
+                page = ctx.pages[0] if ctx.pages else ctx.new_page()
                 for r in rows_st:
                     u = [x for x in r.get("urls", [])
                          if any(q in x for q in P_STEALTH)]
@@ -971,7 +1028,7 @@ def main():
             from patchright.sync_api import sync_playwright as pr
             with pr() as p:
                 browser, ctx = crear_browser(p)
-                page = ctx.new_page()
+                page = ctx.pages[0] if ctx.pages else ctx.new_page()
                 if not prop_ok:
                     log("    propiedades.com: reintentando con navegador simulado...")
                     nuevos += buscar_propiedades_com_stealth(page, urls_existentes)
