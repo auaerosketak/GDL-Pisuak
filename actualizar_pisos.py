@@ -220,7 +220,7 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 def verificar_http(url):
     import requests
     try:
-        r = requests.get(url, timeout=12, allow_redirects=True, headers={
+        r = requests.get(url, timeout=20, allow_redirects=True, headers={
             "User-Agent": UA, "Accept-Language": "es-MX,es;q=0.9"})
         if r.status_code == 404:
             return "caido"
@@ -377,14 +377,25 @@ def regenerar_mapa(rows_vivos):
         return False
     payload = json.dumps(rows_vivos, ensure_ascii=False)
     html = MAPA_FILE.read_text(encoding="utf-8")
-    nuevo = re.sub(r"var D=\[.*?\];(?=\s*var S)", f"var D={payload};",
-                   html, count=1, flags=re.DOTALL)
-    if nuevo == html:
-        nuevo = re.sub(r"var D\s*=\s*\[.*?\];", f"var D={payload};",
-                       html, count=1, flags=re.DOTALL)
-    if nuevo == html:
-        log("  AVISO: no se pudo inyectar el payload en el mapa")
+
+    START = "/*PISOS_DATA_START*/"
+    END = "/*PISOS_DATA_END*/"
+    i0 = html.find(START)
+    i1 = html.find(END)
+
+    if i0 == -1 or i1 == -1 or i1 <= i0:
+        log("  AVISO: no se encontraron los marcadores PISOS_DATA_START/END en el mapa")
+        log("         el mapa no tiene el formato esperado; sube de nuevo la version")
+        log("         corregida del archivo Mapa_departamentos_Guadalajara.html")
         return False
+
+    nuevo_bloque = f"{START}var D={payload};{END}"
+    nuevo = html[:i0] + nuevo_bloque + html[i1 + len(END):]
+
+    if nuevo == html:
+        log("  AVISO: los datos ya estaban actualizados (sin cambios)")
+        return True
+
     fecha = datetime.date.today().strftime("%d/%m/%Y %H:%M")
     banner = (f'<span style="background:#1a7a3c;color:#fff;font-size:10px;'
               f'padding:2px 8px;border-radius:3px;margin-left:8px">'
