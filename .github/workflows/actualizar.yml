@@ -33,6 +33,8 @@ jobs:
 
       - name: Ejecutar el script de actualizacion
         run: python actualizar_pisos.py
+        env:
+          EASYBROKER_API_KEY: ${{ secrets.EASYBROKER_API_KEY }}
 
       - name: Guardar los cambios en el repositorio
         run: |
