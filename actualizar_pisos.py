@@ -370,7 +370,17 @@ def buscar_easybroker(urls_existentes):
     nuevos = []
     api_key = os.environ.get("EASYBROKER_API_KEY", "")
     if not api_key:
-        log("    EasyBroker: sin clave configurada (ver EASYBROKER_API_KEY en Settings > Secrets)")
+        # En el ordenador local: leer de un archivo clave_easybroker.txt junto al script
+        archivo_clave = CARPETA / "clave_easybroker.txt"
+        if archivo_clave.exists():
+            try:
+                api_key = archivo_clave.read_text(encoding="utf-8").strip()
+            except Exception:
+                api_key = ""
+    if not api_key:
+        log("    EasyBroker: sin clave configurada")
+        log("      En GitHub: Settings > Secrets > EASYBROKER_API_KEY")
+        log("      En tu PC: crea el archivo clave_easybroker.txt con la clave dentro")
         return nuevos
     try:
         r = requests.get("https://api.easybroker.com/v1/properties",
