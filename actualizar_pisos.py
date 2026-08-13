@@ -258,86 +258,112 @@ def verificar_stealth(page, url):
 # ══════════════════════════════════════════════════════════════════════════
 # BÚSQUEDA DE NUEVOS
 # ══════════════════════════════════════════════════════════════════════════
+def _parsear_tarjetas_propiedades_com(html_text, urls_existentes):
+    """Logica de extraccion compartida entre el modo rapido (requests) y el
+    modo de respaldo (navegador simulado), para no duplicar el analisis."""
+    from bs4 import BeautifulSoup
+    nuevos = []
+    soup = BeautifulSoup(html_text, "lxml")
+    cards = soup.select("section[id^='result-card-']")
+    for card in cards[:40]:
+        try:
+            a = card.select_one("a.pcom-property-card-body-main-info-street")
+            if not a:
+                continue
+            u = a.get("href", "")
+            if not u or u in urls_existentes:
+                continue
+
+            full_text = card.get_text(" ", strip=True)
+            pm = re.search(r"\$\s?([\d,]{4,})", full_text)
+            precio = int(re.sub(r"[^\d]", "", pm.group(1))) if pm else 0
+            if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
+                continue
+
+            amenities = {}
+            for li in card.select("li.amenities"):
+                label_el = li.select_one(".amenities-label")
+                count_el = li.select_one(".amenities-count")
+                if label_el:
+                    label = label_el.get_text(strip=True).lower()
+                    count = int(count_el.get_text(strip=True)) if count_el else True
+                    amenities[label] = count
+
+            rec = 1
+            for k, v in amenities.items():
+                if "recámara" in k or "recamara" in k:
+                    rec = v if isinstance(v, int) else 1
+
+            mob = "A" if any("amueblado" in k for k in amenities) else "?"
+            pool = any("alberca" in k or "piscina" in k for k in amenities)
+
+            m2m = re.search(r"(\d+)\s*m[²2]", full_text)
+            m2 = int(m2m.group(1)) if m2m else 0
+
+            tl = full_text.lower()
+            colonia = ""
+            for c in COLONIAS_OBJETIVO:
+                if c in tl:
+                    colonia = c
+                    break
+            if not colonia:
+                continue
+
+            h2 = card.select_one("h2")
+            nombre = h2.get_text(strip=True)[:70] if h2 else "Departamento"
+
+            nuevos.append({
+                "nombre": nombre, "colonia": colonia, "precio": precio,
+                "m2": m2, "rec": rec, "mob": mob, "pool": pool,
+                "url": u, "portal": "propiedades.com", "nuevo": True
+            })
+        except Exception:
+            continue
+    return nuevos, len(cards)
+
 def buscar_propiedades_com(urls_existentes):
     """
     Selectores verificados el 13-08-2026 sobre HTML real de propiedades.com.
-    Cada tarjeta: section[id^='result-card-'], link en
-    a.pcom-property-card-body-main-info-street (URL completa ya lista),
-    amenidades como lista li.amenities con .amenities-label/.amenities-count
-    (incluye la etiqueta directa "Amueblado" cuando aplica). El precio no
-    tiene clase estable (usa hashes de styled-components), asi que se busca
-    por patron $X,XXX en el texto completo de la tarjeta.
+    Intento rapido via peticion HTTP directa. Si falla (timeout, bloqueo),
+    quien llama a esta funcion en main() reintenta con navegador simulado
+    mediante buscar_propiedades_com_stealth().
     """
     import requests
-    from bs4 import BeautifulSoup
-    nuevos = []
     url = (f"https://propiedades.com/guadalajara/departamentos-renta"
            f"?precio-maximo={PRECIO_MAX_BUSQUEDA}&orden=reciente")
     try:
-        r = requests.get(url, timeout=20, headers={"User-Agent": UA})
+        r = requests.get(url, timeout=25, headers={"User-Agent": UA})
         if r.status_code != 200:
-            log(f"    propiedades.com: HTTP {r.status_code}")
-            return nuevos
-        soup = BeautifulSoup(r.text, "lxml")
-        cards = soup.select("section[id^='result-card-']")
-        for card in cards[:40]:
-            try:
-                a = card.select_one("a.pcom-property-card-body-main-info-street")
-                if not a:
-                    continue
-                u = a.get("href", "")
-                if not u or u in urls_existentes:
-                    continue
-
-                full_text = card.get_text(" ", strip=True)
-                pm = re.search(r"\$\s?([\d,]{4,})", full_text)
-                precio = int(re.sub(r"[^\d]", "", pm.group(1))) if pm else 0
-                if not (5000 < precio <= PRECIO_MAX_BUSQUEDA):
-                    continue
-
-                amenities = {}
-                for li in card.select("li.amenities"):
-                    label_el = li.select_one(".amenities-label")
-                    count_el = li.select_one(".amenities-count")
-                    if label_el:
-                        label = label_el.get_text(strip=True).lower()
-                        count = int(count_el.get_text(strip=True)) if count_el else True
-                        amenities[label] = count
-
-                rec = 1
-                for k, v in amenities.items():
-                    if "recámara" in k or "recamara" in k:
-                        rec = v if isinstance(v, int) else 1
-
-                mob = "A" if any("amueblado" in k for k in amenities) else "?"
-                pool = any("alberca" in k or "piscina" in k for k in amenities)
-
-                m2m = re.search(r"(\d+)\s*m[²2]", full_text)
-                m2 = int(m2m.group(1)) if m2m else 0
-
-                tl = full_text.lower()
-                colonia = ""
-                for c in COLONIAS_OBJETIVO:
-                    if c in tl:
-                        colonia = c
-                        break
-                if not colonia:
-                    continue
-
-                h2 = card.select_one("h2")
-                nombre = h2.get_text(strip=True)[:70] if h2 else "Departamento"
-
-                nuevos.append({
-                    "nombre": nombre, "colonia": colonia, "precio": precio,
-                    "m2": m2, "rec": rec, "mob": mob, "pool": pool,
-                    "url": u, "portal": "propiedades.com", "nuevo": True
-                })
-            except Exception:
-                continue
-        log(f"    propiedades.com: {len(nuevos)} candidatos")
+            log(f"    propiedades.com (directo): HTTP {r.status_code}")
+            return [], False
+        nuevos, ncards = _parsear_tarjetas_propiedades_com(r.text, urls_existentes)
+        log(f"    propiedades.com (directo): {len(nuevos)} candidatos "
+            f"({ncards} tarjetas, {len(r.text)} bytes)")
+        return nuevos, True
     except Exception as e:
-        log(f"    propiedades.com: error – {e}")
-    return nuevos
+        log(f"    propiedades.com (directo): error – {e}")
+        return [], False
+
+def buscar_propiedades_com_stealth(page, urls_existentes):
+    """Respaldo con navegador simulado, usado solo si el modo directo falla
+    (por ejemplo si el runner de GitHub Actions es bloqueado o ralentizado)."""
+    url = (f"https://propiedades.com/guadalajara/departamentos-renta"
+           f"?precio-maximo={PRECIO_MAX_BUSQUEDA}&orden=reciente")
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=28000)
+        try:
+            page.wait_for_selector("section[id^='result-card-']", timeout=15000)
+        except Exception:
+            log("      (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)")
+        time.sleep(1.5)
+        html_text = page.content()
+        nuevos, ncards = _parsear_tarjetas_propiedades_com(html_text, urls_existentes)
+        log(f"    propiedades.com (respaldo navegador): {len(nuevos)} candidatos "
+            f"({ncards} tarjetas, {len(html_text)} bytes)")
+        return nuevos
+    except Exception as e:
+        log(f"    propiedades.com (respaldo navegador): error – {e}")
+        return []
 
 def buscar_easybroker(urls_existentes):
     import requests, os
@@ -396,7 +422,11 @@ def buscar_vivanuncios(page, url_busqueda, urls_existentes):
                           "roomie", "cuarto en renta", "renta de cuarto"]
     try:
         page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
-        time.sleep(3)
+        try:
+            page.wait_for_selector("div[data-qa='posting PROPERTY']", timeout=15000)
+        except Exception:
+            log(f"      (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)")
+        time.sleep(1.5)
         soup = BeautifulSoup(page.content(), "lxml")
         cards = soup.select("div[data-qa='posting PROPERTY']")
         for card in cards[:40]:
@@ -455,7 +485,7 @@ def buscar_vivanuncios(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Vivanuncios: {len(nuevos)} candidatos")
+        log(f"    Vivanuncios: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
     except Exception as e:
         log(f"    Vivanuncios: error – {e}")
     return nuevos
@@ -471,7 +501,11 @@ def buscar_inmuebles24(page, url_busqueda, urls_existentes):
     nuevos = []
     try:
         page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
-        time.sleep(3)
+        try:
+            page.wait_for_selector("div[data-qa='posting PROPERTY']", timeout=15000)
+        except Exception:
+            log(f"      (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)")
+        time.sleep(1.5)
         soup = BeautifulSoup(page.content(), "lxml")
         cards = soup.select("div[data-qa='posting PROPERTY']")
         for card in cards[:40]:
@@ -525,7 +559,7 @@ def buscar_inmuebles24(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Inmuebles24: {len(nuevos)} candidatos")
+        log(f"    Inmuebles24: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
     except Exception as e:
         log(f"    Inmuebles24: error – {e}")
     return nuevos
@@ -543,7 +577,11 @@ def buscar_lamudi(page, url_busqueda, urls_existentes):
     nuevos = []
     try:
         page.goto(url_busqueda, wait_until="domcontentloaded", timeout=28000)
-        time.sleep(3)
+        try:
+            page.wait_for_selector("div[data-test='normal-listing']", timeout=15000)
+        except Exception:
+            log(f"      (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)")
+        time.sleep(1.5)
         soup = BeautifulSoup(page.content(), "lxml")
         cards = soup.select("div[data-test='normal-listing']")
         for card in cards[:40]:
@@ -604,7 +642,7 @@ def buscar_lamudi(page, url_busqueda, urls_existentes):
                 })
             except Exception:
                 continue
-        log(f"    Lamudi: {len(nuevos)} candidatos")
+        log(f"    Lamudi: {len(nuevos)} candidatos ({len(cards)} tarjetas detectadas, {len(page.content())} bytes recibidos)")
     except Exception as e:
         log(f"    Lamudi: error – {e}")
     return nuevos
@@ -916,13 +954,17 @@ def main():
         log(f"  Colonias: Providencia, Ladron de Guevara, Americana, "
             f"Santa Teresita, Vallarta Norte")
         log(f"  Precio nominal maximo (cualquier mobiliario): ${PRECIO_MAX_BUSQUEDA:,}")
-        nuevos += buscar_propiedades_com(urls_existentes)
+        prop_nuevos, prop_ok = buscar_propiedades_com(urls_existentes)
+        nuevos += prop_nuevos
         nuevos += buscar_easybroker(urls_existentes)
         try:
             from patchright.sync_api import sync_playwright as pr
             with pr() as p:
                 browser, ctx = crear_browser(p)
                 page = ctx.new_page()
+                if not prop_ok:
+                    log("    propiedades.com: reintentando con navegador simulado...")
+                    nuevos += buscar_propiedades_com_stealth(page, urls_existentes)
                 nuevos += buscar_inmuebles24(page,
                     "https://www.inmuebles24.com/departamentos-en-renta-en-"
                     "ladron-de-guevara,americana,providencia,santa-teresita-"
