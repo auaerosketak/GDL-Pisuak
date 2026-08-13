@@ -90,7 +90,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -179,7 +179,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -675,7 +675,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -921,7 +921,7 @@
       "estado_nuevo": 1,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1000,7 +1000,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1162,7 +1162,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1409,7 +1409,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1488,7 +1488,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1569,7 +1569,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1818,7 +1818,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -1899,7 +1899,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2141,7 +2141,7 @@
       "estado_nuevo": 1,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2222,7 +2222,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2303,7 +2303,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2384,7 +2384,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2463,7 +2463,7 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   },
@@ -2702,7 +2702,7 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": false,
+    "available": null,
     "available_detail": "no_verificable",
     "last_checked": "2026-08-13"
   }
