@@ -90,8 +90,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 85,
@@ -178,8 +179,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 82,
@@ -264,7 +266,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 71,
@@ -342,7 +345,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 69,
@@ -424,7 +428,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 62,
@@ -506,7 +511,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 60,
@@ -584,7 +590,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 59,
@@ -668,8 +675,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 59,
@@ -754,7 +762,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 58,
@@ -832,7 +841,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 56,
@@ -911,8 +921,9 @@
       "estado_nuevo": 1,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 53,
@@ -989,8 +1000,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 51,
@@ -1070,7 +1082,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 51,
@@ -1149,8 +1162,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 51,
@@ -1231,7 +1245,8 @@
       "dist_sep": 0
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 49,
@@ -1309,7 +1324,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 45,
@@ -1393,8 +1409,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 44,
@@ -1471,8 +1488,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 43,
@@ -1551,8 +1569,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 43,
@@ -1638,7 +1657,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 39,
@@ -1716,7 +1736,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 39,
@@ -1797,8 +1818,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 36,
@@ -1877,8 +1899,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 36,
@@ -1961,7 +1984,8 @@
       "dist_sep": 0
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 35,
@@ -2039,7 +2063,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 35,
@@ -2116,8 +2141,9 @@
       "estado_nuevo": 1,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 32,
@@ -2196,8 +2222,9 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 31,
@@ -2276,8 +2303,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 29,
@@ -2356,8 +2384,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 28,
@@ -2434,8 +2463,9 @@
       "estado_nuevo": 0,
       "dist_sep": 0
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 28,
@@ -2515,7 +2545,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 28,
@@ -2593,7 +2624,8 @@
       "dist_sep": 1
     },
     "available": true,
-    "available_detail": "activo"
+    "available_detail": "activo",
+    "last_checked": "2026-08-13"
   },
   {
     "tot": 27,
@@ -2670,7 +2702,8 @@
       "estado_nuevo": 0,
       "dist_sep": 1
     },
-    "available": true,
-    "available_detail": "activo"
+    "available": false,
+    "available_detail": "no_verificable",
+    "last_checked": "2026-08-13"
   }
 ]
