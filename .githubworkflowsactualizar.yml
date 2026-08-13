@@ -1,0 +1,43 @@
+name: Actualizar pisos Guadalajara
+
+# Se ejecuta sola cada 6 horas, y tambien se puede lanzar a mano
+# desde la pestana "Actions" de GitHub con el boton "Run workflow".
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 00:00, 06:00, 12:00, 18:00 UTC
+  workflow_dispatch:
+
+# Permiso necesario para que el propio workflow pueda subir
+# (git push) los archivos actualizados al repositorio.
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+          patchright install --with-deps chromium
+
+      - name: Ejecutar el script de actualizacion
+        run: python actualizar_pisos.py
+
+      - name: Guardar los cambios en el repositorio
+        run: |
+          git config user.name "Actualizador automatico"
+          git config user.email "actions@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Actualizacion automatica $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
