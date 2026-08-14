@@ -713,3 +713,83 @@ Call log:
 [2026-08-14 05:52]   Total en el mapa    : 33
 [2026-08-14 05:52] ==============================================================
 
+[2026-08-14 09:42] ==============================================================
+[2026-08-14 09:42] ACTUALIZACION (completa)
+[2026-08-14 09:42] ==============================================================
+[2026-08-14 09:42] 
+-- FASE 1: verificando anuncios existentes --
+[2026-08-14 09:43]   ?? no_verificable  [ 1] Pedro Moreno
+[2026-08-14 09:43]   ?? no_verificable  [ 2] Pompeya 2564
+[2026-08-14 09:43]   ?? no_verificable  [ 8] Hidalgo y Costilla 1618
+[2026-08-14 09:44]   ?? no_verificable  [12] Labrador
+[2026-08-14 09:44]   ?? no_verificable  [14] Justo Sierra
+[2026-08-14 09:45]   ?? no_verificable  [17] Nomad Living Neruda (sin aval)
+[2026-08-14 09:45]   ?? no_verificable  [19] Juan Ruiz Alarcón
+[2026-08-14 09:45]   ?? no_verificable  [26] Manuel M. Diéguez
+[2026-08-14 09:46]   ?? no_verificable  [33] Morelos
+[2026-08-14 09:46] 
+  Navegador stealth para 24 anuncios...
+[2026-08-14 09:46]       navegador: chromium (invisible)
+[2026-08-14 09:46]   OK activo          [ 3] Pablo Villaseñor 120 m²
+[2026-08-14 09:46]   OK activo          [ 4] Pablo Casals (80 m², 2 rec)
+[2026-08-14 09:46]   OK activo          [ 5] Antonio de León 248
+[2026-08-14 09:46]   OK activo          [ 6] Av. Manuel Acuña 3138
+[2026-08-14 09:46]   OK activo          [ 7] Aztecas (80 m², 2 rec)
+[2026-08-14 09:46]   OK activo          [ 9] Av. México 2083
+[2026-08-14 09:46]   OK activo          [10] Terranova 388-203
+[2026-08-14 09:46]   OK activo          [11] Providencia 4ª Secc
+[2026-08-14 09:46]   OK activo          [13] Quebec 1155
+[2026-08-14 09:46]   OK activo          [15] Penthouse Aztecas 1005
+[2026-08-14 09:46]   OK activo          [16] Fray Luis de Palacio
+[2026-08-14 09:46]   OK activo          [18] Reforma / Av. Américas
+[2026-08-14 09:46]   OK activo          [20] Av. Pablo Neruda 2300 (2 unid.)
+[2026-08-14 09:46]   OK activo          [21] Justo Sierra 2429
+[2026-08-14 09:46]   OK activo          [22] Madison Loft
+[2026-08-14 09:46]   OK activo          [23] Providencia ID 167276
+[2026-08-14 09:46]   OK activo          [24] Av. Pablo Neruda 40 m² (sin aval)
+[2026-08-14 09:46]   OK activo          [25] La Paz 2538
+[2026-08-14 09:46]   OK activo          [27] Américas (Ayuntamiento)
+[2026-08-14 09:46]   OK activo          [28] Ayuntamiento ID 167284
+[2026-08-14 09:46]   OK activo          [29] Ayuntamiento ID 167285
+[2026-08-14 09:46]   OK activo          [30] Loft Providencia 1ª Secc
+[2026-08-14 09:47]   OK activo          [31] Av. de las Américas 918
+[2026-08-14 09:47]   OK activo          [32] Av. de las Américas 872 (64 m²)
+[2026-08-14 09:47] 
+-- FASE 2: recalculando puntuaciones --
+[2026-08-14 09:47]   33 propiedades activas repuntuadas
+[2026-08-14 09:47]   Rango de puntuacion: 27 - 88
+[2026-08-14 09:47]   Top 3: Pedro Moreno (88) | Pompeya 2564 (85) | Pablo Villaseñor 120 m (82)
+[2026-08-14 09:47] 
+-- FASE 3: buscando nuevos anuncios --
+[2026-08-14 09:47]   Colonias: Providencia, Ladron de Guevara, Americana, Santa Teresita, Vallarta Norte
+[2026-08-14 09:47]   Precio nominal maximo (cualquier mobiliario): $22,000
+[2026-08-14 09:47]     propiedades.com (directo): error – HTTPSConnectionPool(host='propiedades.com', port=443): Read timed out. (read timeout=25)
+[2026-08-14 09:47]     EasyBroker: 0 candidatos
+[2026-08-14 09:47]       navegador: chromium (invisible)
+[2026-08-14 09:47]     propiedades.com: reintentando con navegador simulado...
+[2026-08-14 09:47]     propiedades.com (respaldo navegador): error – Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://propiedades.com/guadalajara/departamentos-renta?precio-maximo=22000&orden=reciente
+Call log:
+  - navigating to "https://propiedades.com/guadalajara/departamentos-renta?precio-maximo=22000&orden=reciente", waiting until "domcontentloaded"
+
+[2026-08-14 09:47]       (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)
+[2026-08-14 09:47]     Inmuebles24: 0 candidatos (0 tarjetas, 4663 bytes) -> bloqueo (pagina de verificacion / captcha)
+[2026-08-14 09:48]       (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)
+[2026-08-14 09:48]     Lamudi: 0 candidatos (0 tarjetas, 923 bytes) -> bloqueo (respuesta practicamente vacia)
+[2026-08-14 09:48]       (aviso: no aparecieron tarjetas tras 15s de espera, se intenta igual)
+[2026-08-14 09:48]     Vivanuncios: 0 candidatos (0 tarjetas, 27874 bytes) -> bloqueo (pagina de verificacion / captcha)
+[2026-08-14 09:48]   No se encontraron candidatos nuevos
+[2026-08-14 09:48] 
+-- FASE 4: guardando y regenerando --
+[2026-08-14 09:48]   Mapa actualizado con 33 propiedades
+[2026-08-14 09:48]   PDF actualizado: 33 propiedades
+[2026-08-14 09:48] 
+==============================================================
+[2026-08-14 09:48] RESUMEN
+[2026-08-14 09:48]   Activos verificados : 24
+[2026-08-14 09:48]   No verificables     : 9  (revisar manualmente)
+[2026-08-14 09:48]   Eliminados (caidos) : 0
+[2026-08-14 09:48]   Excluidos por precio: 0
+[2026-08-14 09:48]   Candidatos nuevos   : 0
+[2026-08-14 09:48]   Total en el mapa    : 33
+[2026-08-14 09:48] ==============================================================
+
