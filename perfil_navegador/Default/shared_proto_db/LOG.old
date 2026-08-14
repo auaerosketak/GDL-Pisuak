@@ -1,2 +1,3 @@
-2026/08/13-21:54:27.700 c06 Creating DB /home/runner/work/GDL-Pisuak/GDL-Pisuak/perfil_navegador/Default/shared_proto_db since it was missing.
-2026/08/13-21:54:27.703 c06 Reusing MANIFEST /home/runner/work/GDL-Pisuak/GDL-Pisuak/perfil_navegador/Default/shared_proto_db/MANIFEST-000001
+2026/08/14-05:50:20.924 b9f Reusing MANIFEST /home/runner/work/GDL-Pisuak/GDL-Pisuak/perfil_navegador/Default/shared_proto_db/MANIFEST-000001
+2026/08/14-05:50:20.924 b9f Recovering log #3
+2026/08/14-05:50:20.924 b9f Reusing old log /home/runner/work/GDL-Pisuak/GDL-Pisuak/perfil_navegador/Default/shared_proto_db/000003.log 
