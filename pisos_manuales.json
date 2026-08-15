@@ -1,0 +1,53 @@
+[
+  {
+    "n": "Av. Cvln. Jorge álvarez Del Castillo 1018",
+    "pr": 15600,
+    "m2": 50,
+    "rec": 1,
+    "c": "Ayuntamiento",
+    "mob": "A",
+    "extras": {
+      "pool": 1,
+      "ac": 1,
+      "balcon": 1,
+      "lavanderia": 1,
+      "rooftop": 1,
+      "gym": 1,
+      "coworking": 1,
+      "sin_aval": 1
+    },
+    "urls": [],
+    "calidad": {
+      "ac": 1,
+      "estado_nuevo": 0,
+      "dist_sep": 1
+    },
+    "ciclovia": null,
+    "direccion": "Jorge álvarez Del Castillo 1018",
+    "addr": "Jorge álvarez Del Castillo 1018",
+    "conf": "M",
+    "manual": true,
+    "available": true,
+    "available_detail": "activo",
+    "nuevo": true,
+    "lat": 20.69629559659003,
+    "lng": -103.37209047227282,
+    "km": 2.71,
+    "bike": 13,
+    "sA": 17,
+    "sB": 4,
+    "sC": 4,
+    "sD": 15,
+    "sE": 6,
+    "sF": 17,
+    "base": 63,
+    "bonus2": [],
+    "bonus3": [],
+    "bpts": 0,
+    "tot": 63,
+    "eff_rent": 15600,
+    "xp": "",
+    "id": 9,
+    "id2": 9
+  }
+]
