@@ -43,6 +43,24 @@ CAND_FILE = CARPETA / "nuevos_candidatos.json"
 # CRITERIOS DE BÚSQUEDA
 # ══════════════════════════════════════════════════════════════════════════
 PRECIO_MAX_BUSQUEDA = 22000  # techo de precio NOMINAL para la busqueda; no distingue amueblado o no
+
+# ── Portales de busqueda de anuncios NUEVOS ───────────────────────────────
+# Comprobado el 13-08-2026: Inmuebles24, Lamudi, Vivanuncios y propiedades.com
+# bloquean el acceso automatizado (captcha / respuesta vacia / error HTTP2),
+# tanto desde GitHub Actions como desde una conexion domestica normal, incluso
+# con navegador real no detectable. Se dejan desactivados para no perder 2-3
+# minutos en cada ejecucion buscando algo que siempre devuelve cero.
+# EasyBroker SI funciona: es una API oficial con permiso.
+# Para reactivar alguno, ponlo a True y vuelve a probar.
+BUSCAR_EN = {
+    "easybroker":       True,
+    "propiedades_com":  False,
+    "inmuebles24":      False,
+    "lamudi":           False,
+    "vivanuncios":      False,
+}
+# La VERIFICACION de anuncios ya existentes (Fase 1) no se ve afectada:
+# esa si funciona correctamente y sigue activa.
 PRECIO_MAX_SIN_AMUE  = 19500   # filtro duro si no tiene piscina ni 2 rec
 
 COLONIAS_OBJETIVO = [
@@ -77,11 +95,24 @@ def renta_efectiva(r):
     return r["pr"] + coste_amoblar(r["m2"])
 
 def score_A(r):
-    """Desplazamiento (28 pts). Minutos reales, reducidos si hay ciclovía."""
+    """
+    Desplazamiento (28 pts). Minutos reales en bici, reducidos si hay ciclovia.
+    Escala por tramos (definida por Andoni):
+        hasta  5 min -> 28 (maximo)
+              10 min -> 20
+              15 min -> 15
+              20 min ->  0
+        mas de 20 min -> 0
+    Entre esos puntos se interpola de forma lineal para evitar saltos bruscos.
+    """
     mins = r.get("bike", 15)
     if r.get("ciclovia") == "yaquis":  mins *= CICLOVIA_YAQUIS
     if r.get("ciclovia") == "hidalgo": mins *= CICLOVIA_HIDALGO
-    return max(0, min(28, round(28 * (15 - mins) / 12)))
+    if mins <= 5:  return 28
+    if mins <= 10: return round(28 - (mins - 5) * (28 - 20) / 5)
+    if mins <= 15: return round(20 - (mins - 10) * (20 - 15) / 5)
+    if mins <= 20: return round(15 - (mins - 15) * 15 / 5)
+    return 0
 
 def score_B(r):
     """Tamaño (20 pts). Lineal 34 m² → 120 m², techo en 120."""
@@ -1021,33 +1052,49 @@ def main():
         log(f"  Colonias: Providencia, Ladron de Guevara, Americana, "
             f"Santa Teresita, Vallarta Norte")
         log(f"  Precio nominal maximo (cualquier mobiliario): ${PRECIO_MAX_BUSQUEDA:,}")
-        prop_nuevos, prop_ok = buscar_propiedades_com(urls_existentes)
-        nuevos += prop_nuevos
-        nuevos += buscar_easybroker(urls_existentes)
-        try:
-            from patchright.sync_api import sync_playwright as pr
-            with pr() as p:
-                browser, ctx = crear_browser(p)
-                page = ctx.pages[0] if ctx.pages else ctx.new_page()
-                if not prop_ok:
-                    log("    propiedades.com: reintentando con navegador simulado...")
-                    nuevos += buscar_propiedades_com_stealth(page, urls_existentes)
-                nuevos += buscar_inmuebles24(page,
-                    "https://www.inmuebles24.com/departamentos-en-renta-en-"
-                    "ladron-de-guevara,americana,providencia,santa-teresita-"
-                    f"jalisco.html?precio-maximo={PRECIO_MAX_BUSQUEDA}",
-                    urls_existentes)
-                nuevos += buscar_lamudi(page,
-                    "https://www.lamudi.com.mx/jalisco/guadalajara/for-rent/"
-                    f"?price[max]={PRECIO_MAX_BUSQUEDA}&property_type[]=Apartamento",
-                    urls_existentes)
-                nuevos += buscar_vivanuncios(page,
-                    "https://www.vivanuncios.com.mx/departamentos-en-renta/"
-                    f"guadalajara/v1c1097l4009p1?precio-maximo={PRECIO_MAX_BUSQUEDA}",
-                    urls_existentes)
-                browser.close()
-        except Exception as e:
-            log(f"    ERROR busqueda stealth: {e}")
+        desactivados = [k for k, v in BUSCAR_EN.items() if not v]
+        if desactivados:
+            log(f"    (portales desactivados por bloqueo: {', '.join(desactivados)})")
+
+        prop_ok = True
+        if BUSCAR_EN["propiedades_com"]:
+            prop_nuevos, prop_ok = buscar_propiedades_com(urls_existentes)
+            nuevos += prop_nuevos
+        if BUSCAR_EN["easybroker"]:
+            nuevos += buscar_easybroker(urls_existentes)
+
+        necesita_navegador = (
+            (BUSCAR_EN["propiedades_com"] and not prop_ok)
+            or BUSCAR_EN["inmuebles24"] or BUSCAR_EN["lamudi"] or BUSCAR_EN["vivanuncios"]
+        )
+        if necesita_navegador:
+            try:
+                from patchright.sync_api import sync_playwright as pr
+                with pr() as p:
+                    browser, ctx = crear_browser(p)
+                    page = ctx.pages[0] if ctx.pages else ctx.new_page()
+                    if BUSCAR_EN["propiedades_com"] and not prop_ok:
+                        log("    propiedades.com: reintentando con navegador simulado...")
+                        nuevos += buscar_propiedades_com_stealth(page, urls_existentes)
+                    if BUSCAR_EN["inmuebles24"]:
+                        nuevos += buscar_inmuebles24(page,
+                            "https://www.inmuebles24.com/departamentos-en-renta-en-"
+                            "ladron-de-guevara,americana,providencia,santa-teresita-"
+                            f"jalisco.html?precio-maximo={PRECIO_MAX_BUSQUEDA}",
+                            urls_existentes)
+                    if BUSCAR_EN["lamudi"]:
+                        nuevos += buscar_lamudi(page,
+                            "https://www.lamudi.com.mx/jalisco/guadalajara/for-rent/"
+                            f"?price[max]={PRECIO_MAX_BUSQUEDA}&property_type[]=Apartamento",
+                            urls_existentes)
+                    if BUSCAR_EN["vivanuncios"]:
+                        nuevos += buscar_vivanuncios(page,
+                            "https://www.vivanuncios.com.mx/departamentos-en-renta/"
+                            f"guadalajara/v1c1097l4009p1?precio-maximo={PRECIO_MAX_BUSQUEDA}",
+                            urls_existentes)
+                    browser.close()
+            except Exception as e:
+                log(f"    ERROR busqueda stealth: {e}")
 
         if nuevos:
             prev = []
