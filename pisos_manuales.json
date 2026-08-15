@@ -47,7 +47,59 @@
     "tot": 63,
     "eff_rent": 15600,
     "xp": "",
-    "id": 9,
-    "id2": 9
+    "id": 10,
+    "id2": 10
+  },
+  {
+    "n": "Psicina y gym",
+    "pr": 3500,
+    "m2": 77,
+    "rec": 2,
+    "c": "Santa Teresita",
+    "mob": "S",
+    "extras": {
+      "pool": 1,
+      "ac": 1,
+      "balcon": 1,
+      "gym": 1
+    },
+    "urls": [],
+    "calidad": {
+      "ac": 1,
+      "estado_nuevo": 0,
+      "dist_sep": 1
+    },
+    "ciclovia": null,
+    "direccion": "Manuel M. Dieguez 900, Santa Teresita, Guadalajara, Jalisco",
+    "addr": "Manuel M. Dieguez 900, Santa Teresita, Guadalajara, Jalisco",
+    "conf": "M",
+    "manual": true,
+    "available": true,
+    "available_detail": "activo",
+    "nuevo": true,
+    "lat": 20.690189969315597,
+    "lng": -103.37043490401135,
+    "km": 2.84,
+    "bike": 13,
+    "sA": 17,
+    "sB": 10,
+    "sC": 7,
+    "sD": 13,
+    "sE": 13,
+    "sF": 20,
+    "base": 80,
+    "bonus2": [],
+    "bonus3": [
+      [
+        "Piscina + Barrio + Precio",
+        8
+      ]
+    ],
+    "bpts": 8,
+    "tot": 88,
+    "eff_rent": 3500,
+    "xp": "",
+    "id": 4,
+    "id2": 4
   }
 ]
