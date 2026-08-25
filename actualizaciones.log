@@ -4037,3 +4037,71 @@ Call log:
 [2026-08-25 14:33]   Total en el mapa    : 33
 [2026-08-25 14:33] ==============================================================
 
+[2026-08-25 19:46] ==============================================================
+[2026-08-25 19:46] ACTUALIZACION (completa)
+[2026-08-25 19:46] ==============================================================
+[2026-08-25 19:46] 
+-- FASE 1: verificando anuncios existentes --
+[2026-08-25 19:46]   ?? no_verificable  [ 2] Pedro Moreno
+[2026-08-25 19:46]   ?? no_verificable  [ 3] Pompeya 2564
+[2026-08-25 19:47]   ?? no_verificable  [ 5] Hidalgo y Costilla 1618
+[2026-08-25 19:47]   ?? no_verificable  [12] Justo Sierra
+[2026-08-25 19:47]   ?? no_verificable  [14] Labrador
+[2026-08-25 19:48]   ?? no_verificable  [15] Juan Ruiz Alarcón
+[2026-08-25 19:48]   ?? no_verificable  [17] Nomad Living Neruda (sin aval)
+[2026-08-25 19:48]   ?? no_verificable  [24] Manuel M. Diéguez
+[2026-08-25 19:49]   ?? no_verificable  [29] Morelos
+[2026-08-25 19:49] 
+  Navegador stealth para 24 anuncios...
+[2026-08-25 19:49]       navegador: chromium (invisible)
+[2026-08-25 19:49]   OK activo          [ 1] Pablo Villaseñor 120 m²
+[2026-08-25 19:49]   OK activo          [ 4] Antonio de León 248
+[2026-08-25 19:49]   OK activo          [ 6] Pablo Casals (80 m², 2 rec)
+[2026-08-25 19:49]   OK activo          [ 7] Av. México 2083
+[2026-08-25 19:49]   OK activo          [ 8] Terranova 388-203
+[2026-08-25 19:49]   OK activo          [ 9] Av. Manuel Acuña 3138
+[2026-08-25 19:49]   OK activo          [10] Fray Luis de Palacio
+[2026-08-25 19:49]   OK activo          [11] Aztecas (80 m², 2 rec)
+[2026-08-25 19:49]   OK activo          [13] Providencia 4ª Secc
+[2026-08-25 19:49]   OK activo          [16] Reforma / Av. Américas
+[2026-08-25 19:49]   OK activo          [18] Quebec 1155
+[2026-08-25 19:49]   OK activo          [19] Av. Pablo Neruda 2300 (2 unid.)
+[2026-08-25 19:49]   OK activo          [20] Penthouse Aztecas 1005
+[2026-08-25 19:49]   OK activo          [21] Justo Sierra 2429
+[2026-08-25 19:49]   OK activo          [22] Madison Loft
+[2026-08-25 19:49]   OK activo          [23] La Paz 2538
+[2026-08-25 19:49]   OK activo          [25] Providencia ID 167276
+[2026-08-25 19:49]   OK activo          [26] Av. Pablo Neruda 40 m² (sin aval)
+[2026-08-25 19:49]   OK activo          [27] Américas (Ayuntamiento)
+[2026-08-25 19:49]   OK activo          [28] Ayuntamiento ID 167284
+[2026-08-25 19:50]   OK activo          [30] Ayuntamiento ID 167285
+[2026-08-25 19:50]   OK activo          [31] Av. de las Américas 918
+[2026-08-25 19:50]   OK activo          [32] Av. de las Américas 872 (64 m²)
+[2026-08-25 19:50]   OK activo          [33] Loft Providencia 1ª Secc
+[2026-08-25 19:50] 
+-- FASE 2: recalculando puntuaciones --
+[2026-08-25 19:50]   33 propiedades activas repuntuadas
+[2026-08-25 19:50]   Rango de puntuacion: 38 - 103
+[2026-08-25 19:50]   Top 3: Pablo Villaseñor 120 m (103) | Pedro Moreno (100) | Pompeya 2564 (91)
+[2026-08-25 19:50] 
+-- FASE 3: buscando nuevos anuncios --
+[2026-08-25 19:50]   Colonias: Providencia, Ladron de Guevara, Americana, Santa Teresita, Vallarta Norte
+[2026-08-25 19:50]   Precio nominal maximo (cualquier mobiliario): $22,000
+[2026-08-25 19:50]     (portales desactivados por bloqueo: propiedades_com, inmuebles24, lamudi, vivanuncios)
+[2026-08-25 19:50]     EasyBroker: 0 candidatos
+[2026-08-25 19:50]   No se encontraron candidatos nuevos
+[2026-08-25 19:50] 
+-- FASE 4: guardando y regenerando --
+[2026-08-25 19:50]   AVISO: los datos ya estaban actualizados (sin cambios)
+[2026-08-25 19:50]   PDF actualizado: 33 propiedades
+[2026-08-25 19:50] 
+==============================================================
+[2026-08-25 19:50] RESUMEN
+[2026-08-25 19:50]   Activos verificados : 24
+[2026-08-25 19:50]   No verificables     : 9  (revisar manualmente)
+[2026-08-25 19:50]   Eliminados (caidos) : 0
+[2026-08-25 19:50]   Excluidos por precio: 0
+[2026-08-25 19:50]   Candidatos nuevos   : 0
+[2026-08-25 19:50]   Total en el mapa    : 33
+[2026-08-25 19:50] ==============================================================
+
